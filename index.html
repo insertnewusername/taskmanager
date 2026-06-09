@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="TaskFlow is a Cloudflare Pages-ready task tracker with account sync, projects, Kanban, calendar, focus timer, analytics, and import/export."
+    />
+    <title>TaskFlow - Task Tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="auth-loading">
+    <section class="auth-gate" id="authGate" aria-label="TaskFlow sign in">
+      <div class="auth-card">
+        <div class="auth-brand">
+          <span class="brand-mark auth-mark" aria-hidden="true">
+            <b></b>
+            <b></b>
+            <b></b>
+          </span>
+          <div>
+            <strong>TaskFlow</strong>
+            <span>Task sync</span>
+          </div>
+        </div>
+
+        <div class="auth-copy">
+          <h1>Welcome to TaskFlow</h1>
+          <p>Sign in or create an account to sync your tasks across devices.</p>
+        </div>
+
+        <form id="authPasswordForm" class="auth-form">
+          <label class="form-row">
+            <span>Email</span>
+            <input id="authEmailInput" type="email" autocomplete="email" required placeholder="you@example.com" />
+          </label>
+          <label class="form-row">
+            <span>Password</span>
+            <input id="authPasswordInput" type="password" autocomplete="current-password" required minlength="6" />
+          </label>
+          <label class="auth-check">
+            <input id="migrateLocalInput" type="checkbox" checked />
+            <span>Bring my tasks from this browser into this account</span>
+          </label>
+          <div class="auth-actions">
+            <button class="button primary" id="signInBtn" type="submit">
+              <i data-lucide="log-in"></i>
+              Sign in
+            </button>
+            <button class="button ghost" id="createAccountBtn" type="button">
+              <i data-lucide="user-plus"></i>
+              Create account
+            </button>
+          </div>
+          <button class="link-button" id="forgotPasswordBtn" type="button">Send password reset email</button>
+        </form>
+
+        <p class="auth-message" id="authMessage">Checking for an existing session...</p>
+      </div>
+    </section>
+
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Workspace navigation">
+        <div class="brand-row">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+            <span>TaskFlow</span>
+          </div>
+          <button class="icon-button" id="themeToggle" type="button" title="Toggle theme" aria-label="Toggle theme">
+            <i data-lucide="moon"></i>
+          </button>
+        </div>
+
+        <nav class="nav-block" aria-label="Smart views">
+          <div class="nav-title">Focus</div>
+          <div id="smartViews" class="nav-list"></div>
+        </nav>
+
+        <nav class="nav-block" aria-label="Projects">
+          <div class="nav-title">Projects</div>
+          <div id="projectNav" class="nav-list"></div>
+        </nav>
+
+        <nav class="nav-block tag-block" aria-label="Tags">
+          <div class="nav-title">Tags</div>
+          <div id="tagNav" class="tag-cloud"></div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="mini-stat">
+            <span id="completionRing" class="ring" aria-hidden="true"></span>
+            <div>
+              <strong id="completionLabel">0%</strong>
+              <span>completion</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-shell">
+        <header class="topbar">
+          <form class="quick-capture" id="quickForm">
+            <i data-lucide="sparkles"></i>
+            <textarea
+              id="quickInput"
+              rows="1"
+              placeholder="Describe the task, date, priority, notes, and steps..."
+              aria-label="Quick task"
+            ></textarea>
+            <button class="button primary" type="submit">
+              <i data-lucide="wand-sparkles"></i>
+              Smart add
+            </button>
+          </form>
+
+          <div class="top-actions">
+            <span class="save-status" id="saveStatus">
+              <i data-lucide="cloud"></i>
+              Sync ready
+            </span>
+            <span class="account-chip" id="accountChip">
+              <i data-lucide="user-circle"></i>
+              Account
+            </span>
+            <button class="button ghost" id="signOutBtn" type="button">
+              <i data-lucide="log-out"></i>
+              Sign out
+            </button>
+            <button class="button ghost" id="densityToggle" type="button">
+              <i data-lucide="rows-3"></i>
+              Compact
+            </button>
+            <button class="button ghost" id="importBtn" type="button">
+              <i data-lucide="upload"></i>
+              Import
+            </button>
+            <input id="importFile" type="file" accept="application/json" hidden />
+            <button class="button ghost" id="exportBtn" type="button">
+              <i data-lucide="download"></i>
+              Export
+            </button>
+            <button class="button primary" id="newTaskBtn" type="button">
+              <i data-lucide="plus"></i>
+              New task
+            </button>
+          </div>
+        </header>
+
+        <section class="metric-strip" id="metrics" aria-label="Task metrics"></section>
+
+        <section class="filter-panel" aria-label="Task filters">
+          <label class="search-field">
+            <i data-lucide="search"></i>
+            <input id="searchInput" type="search" placeholder="Search tasks, notes, tags" />
+          </label>
+
+          <label>
+            <span>Project</span>
+            <select id="projectFilter"></select>
+          </label>
+
+          <label>
+            <span>Tag</span>
+            <select id="tagFilter"></select>
+          </label>
+
+          <label>
+            <span>Priority</span>
+            <select id="priorityFilter">
+              <option value="all">All priorities</option>
+              <option value="urgent">Urgent</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Due</span>
+            <select id="dueFilter">
+              <option value="all">Any date</option>
+              <option value="overdue">Overdue</option>
+              <option value="today">Today</option>
+              <option value="upcoming">Next 7 days</option>
+              <option value="unscheduled">No due date</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Sort</span>
+            <select id="sortSelect">
+              <option value="due">Due date</option>
+              <option value="priority">Priority</option>
+              <option value="created">Newest</option>
+              <option value="title">Title</option>
+              <option value="estimate">Estimate</option>
+            </select>
+          </label>
+
+          <button class="button ghost" id="clearFiltersBtn" type="button">
+            <i data-lucide="x"></i>
+            Clear
+          </button>
+        </section>
+
+        <section class="workspace" aria-label="Task workspace">
+          <div class="workspace-header">
+            <div>
+              <h1 id="viewTitle">All tasks</h1>
+              <p id="viewSubtitle">Plan the work, protect the week, finish the right things.</p>
+            </div>
+            <div class="tabs" id="viewTabs" role="tablist" aria-label="Views">
+              <button class="tab active" type="button" data-view="board" role="tab">
+                <i data-lucide="kanban"></i>
+                Board
+              </button>
+              <button class="tab" type="button" data-view="list" role="tab">
+                <i data-lucide="list-checks"></i>
+                List
+              </button>
+              <button class="tab" type="button" data-view="calendar" role="tab">
+                <i data-lucide="calendar-days"></i>
+                Calendar
+              </button>
+              <button class="tab" type="button" data-view="meetings" role="tab">
+                <i data-lucide="presentation"></i>
+                Events
+              </button>
+              <button class="tab" type="button" data-view="analytics" role="tab">
+                <i data-lucide="bar-chart-3"></i>
+                Analytics
+              </button>
+              <button class="tab" type="button" data-view="focus" role="tab">
+                <i data-lucide="timer"></i>
+                Focus
+              </button>
+            </div>
+          </div>
+
+          <div id="nudgePanel" class="nudge-panel"></div>
+
+          <div id="boardView" class="view active"></div>
+          <div id="listView" class="view"></div>
+          <div id="calendarView" class="view"></div>
+          <div id="meetingsView" class="view"></div>
+          <div id="analyticsView" class="view"></div>
+          <div id="focusView" class="view"></div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="taskDialog" class="task-dialog">
+      <form id="taskForm" method="dialog">
+        <input id="taskId" type="hidden" />
+        <div class="dialog-header">
+          <div>
+            <p class="eyebrow">Task details</p>
+            <h2 id="dialogTitle">New task</h2>
+          </div>
+          <button class="icon-button" id="closeDialogBtn" type="button" aria-label="Close task dialog" title="Close">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <label class="form-row full">
+          <span>Title</span>
+          <input id="titleInput" type="text" required maxlength="120" />
+        </label>
+
+        <div class="form-grid">
+          <label class="form-row">
+            <span>Project</span>
+            <input id="projectInput" type="text" list="projectSuggestions" maxlength="32" />
+            <datalist id="projectSuggestions"></datalist>
+          </label>
+
+          <label class="form-row">
+            <span>Status</span>
+            <select id="statusInput"></select>
+          </label>
+
+          <label class="form-row">
+            <span>Priority</span>
+            <select id="priorityInput">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </label>
+
+          <label class="form-row">
+            <span>Due date</span>
+            <input id="dueInput" type="date" />
+          </label>
+
+          <label class="form-row">
+            <span>Due time</span>
+            <input id="dueTimeInput" type="time" />
+          </label>
+
+          <label class="form-row">
+            <span>Estimate</span>
+            <input id="estimateInput" type="number" min="0" step="5" />
+          </label>
+
+          <label class="form-row">
+            <span>Energy</span>
+            <select id="energyInput">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+
+          <label class="form-row">
+            <span>Recurrence</span>
+            <select id="recurrenceInput">
+              <option value="none">None</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </label>
+
+          <label class="form-row">
+            <span>Tags</span>
+            <input id="tagsInput" type="text" placeholder="design, launch" />
+          </label>
+        </div>
+
+        <label class="form-row full">
+          <span>Notes</span>
+          <textarea id="notesInput" rows="4" maxlength="800"></textarea>
+        </label>
+
+        <div class="subtask-editor">
+          <div class="subtask-head">
+            <span>Subtasks</span>
+            <button class="button ghost" id="addSubtaskBtn" type="button">
+              <i data-lucide="list-plus"></i>
+              Add step
+            </button>
+          </div>
+          <div id="subtaskList" class="subtask-list"></div>
+        </div>
+
+        <div class="dialog-actions">
+          <button class="button danger" id="deleteTaskBtn" type="button">
+            <i data-lucide="trash-2"></i>
+            Delete
+          </button>
+          <span></span>
+          <button class="button ghost" id="duplicateTaskBtn" type="button">
+            <i data-lucide="copy"></i>
+            Duplicate
+          </button>
+          <button class="button primary" id="saveTaskBtn" type="submit">
+            <i data-lucide="save"></i>
+            Save task
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="meetingDialog" class="task-dialog">
+      <form id="meetingForm" method="dialog">
+        <input id="meetingId" type="hidden" />
+        <div class="dialog-header">
+          <div>
+            <p class="eyebrow">Event details</p>
+            <h2 id="meetingDialogTitle">New event</h2>
+          </div>
+          <button class="icon-button" id="closeMeetingDialogBtn" type="button" aria-label="Close event dialog" title="Close">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <label class="form-row full">
+          <span>Title</span>
+          <input id="meetingTitleInput" type="text" required maxlength="120" />
+        </label>
+
+        <div class="form-grid">
+          <label class="form-row">
+            <span>Category</span>
+            <input id="meetingSubjectInput" type="text" maxlength="48" placeholder="Work" />
+          </label>
+
+          <label class="form-row">
+            <span>Status</span>
+            <select id="meetingStatusInput">
+              <option value="scheduled">Scheduled</option>
+              <option value="done">Done</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </label>
+
+          <label class="form-row">
+            <span>Date</span>
+            <input id="meetingDateInput" type="date" required />
+          </label>
+
+          <label class="form-row">
+            <span>Start time</span>
+            <input id="meetingStartInput" type="time" required />
+          </label>
+
+          <label class="form-row">
+            <span>End time</span>
+            <input id="meetingEndInput" type="time" />
+          </label>
+
+          <label class="form-row">
+            <span>Repeat</span>
+            <select id="meetingRecurrenceInput">
+              <option value="none">None</option>
+              <option value="weekly">Weekly</option>
+              <option value="fortnightly">Fortnightly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </label>
+
+          <label class="form-row">
+            <span>Repeat until</span>
+            <input id="meetingRepeatUntilInput" type="date" />
+          </label>
+
+          <label class="form-row">
+            <span>Host</span>
+            <input id="meetingTeacherInput" type="text" maxlength="64" />
+          </label>
+
+          <label class="form-row">
+            <span>Room or link</span>
+            <input id="meetingLocationInput" type="text" maxlength="120" />
+          </label>
+
+          <label class="form-row">
+            <span>Topic</span>
+            <input id="meetingTopicInput" type="text" maxlength="120" />
+          </label>
+        </div>
+
+        <label class="form-row full">
+          <span>Notes</span>
+          <textarea id="meetingNotesInput" rows="5" placeholder="Write what happened, decisions, reminders, or what to bring next time."></textarea>
+        </label>
+
+        <div class="dialog-actions">
+          <button class="button ghost" id="meetingCreateTaskBtn" type="button">
+            <i data-lucide="list-plus"></i>
+            Create follow-up task
+          </button>
+          <button class="button ghost danger" id="deleteMeetingBtn" type="button">
+            <i data-lucide="trash-2"></i>
+            Delete
+          </button>
+          <button class="button primary" type="submit">
+            <i data-lucide="save"></i>
+            Save event
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="deleteMeetingsDialog" class="confirm-dialog">
+      <form id="deleteMeetingsForm" method="dialog">
+        <h2>Delete events</h2>
+        <p>Choose which events to remove. This will sync to your account after confirmation.</p>
+        <label class="form-row full">
+          <span>Delete range</span>
+          <select id="deleteMeetingsScope">
+            <option value="today">Today</option>
+            <option value="tomorrow">Tomorrow</option>
+            <option value="week">This week</option>
+            <option value="month">This month</option>
+            <option value="year">This year</option>
+            <option value="all">All events</option>
+          </select>
+        </label>
+        <div class="confirm-actions">
+          <button class="button ghost" id="cancelDeleteMeetingsBtn" type="button">Cancel</button>
+          <button class="button ghost danger" type="submit">
+            <i data-lucide="trash-2"></i>
+            Continue
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="confirmDialog" class="confirm-dialog">
+      <form method="dialog">
+        <h2 id="confirmTitle">Confirm action</h2>
+        <p id="confirmMessage"></p>
+        <div class="confirm-actions">
+          <button class="button ghost" value="cancel">Cancel</button>
+          <button class="button danger" id="confirmActionBtn" value="confirm">Confirm</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="vendor/lucide.min.js"></script>
+    <script src="config.js"></script>
+    <script src="app.js" defer></script>
+  </body>
+</html>
