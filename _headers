@@ -1,0 +1,12 @@
+# _headers file content
+/*
+  Content-Type: text/html
+
+*.js
+  Content-Type: application/javascript
+
+*.css
+  Content-Type: text/css
+
+/vendor/*
+  Content-Type: application/javascript
