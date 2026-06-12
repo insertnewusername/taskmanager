@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: taskmanager
+    runtime: static
+    publishDir: ./
+    headers:
+      - path: /vendor/*
+        name: Content-Type
+        value: application/javascript
+      - path: /styles.css
+        name: Content-Type
+        value: text/css
+      - path: /app.js
+        name: Content-Type
+        value: application/javascript
+      - path: /config.js
+        name: Content-Type
+        value: application/javascript
