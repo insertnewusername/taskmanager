@@ -2,6 +2,7 @@ const STORAGE_KEY = "taskflow.tasks.v1";
 const THEME_KEY = "taskflow.theme.v1";
 const DENSITY_KEY = "taskflow.density.v1";
 const SESSION_KEY = "taskflow.supabase.session.v1";
+const OAUTH_MIGRATE_KEY = "taskflow.oauth.migrate.v1";
 const PENDING_DELETE_KEY = "taskflow.pending.deletes.v1";
 const PENDING_MEETING_DELETE_KEY = "taskflow.pending.meeting.deletes.v1";
 const MEETING_TIMEZONE_KEY = "taskflow.meeting.timezone.v1";
@@ -98,6 +99,7 @@ function bindElements() {
     "authGate",
     "authEmailInput",
     "authPasswordForm",
+    "authGoogleBtn",
     "authPasswordInput",
     "migrateLocalInput",
     "signInBtn",
@@ -195,6 +197,7 @@ function bindEvents() {
   els.themeToggle.addEventListener("click", toggleTheme);
   els.densityToggle.addEventListener("click", toggleDensity);
   els.authPasswordForm.addEventListener("submit", handleSignIn);
+  els.authGoogleBtn.addEventListener("click", handleGoogleSignIn);
   els.createAccountBtn.addEventListener("click", handleCreateAccount);
   els.forgotPasswordBtn.addEventListener("click", handlePasswordReset);
   els.signOutBtn.addEventListener("click", handleSignOut);
@@ -341,6 +344,28 @@ async function initAuth() {
     return;
   }
 
+  const oauthResult = readOAuthSessionFromUrl();
+  if (oauthResult.error) {
+    showAuthGate();
+    setAuthMessage(oauthResult.error, "error");
+    return;
+  }
+  if (oauthResult.session?.access_token) {
+    try {
+      const migrateLocalTasks = sessionStorage.getItem(OAUTH_MIGRATE_KEY) !== "0";
+      sessionStorage.removeItem(OAUTH_MIGRATE_KEY);
+      await completeAuth(oauthResult.session, "Signed in with Google", { migrateLocalTasks });
+      return;
+    } catch (error) {
+      clearStoredSession();
+      state.session = null;
+      state.user = null;
+      showAuthGate();
+      setAuthMessage(readableError(error), "error");
+      return;
+    }
+  }
+
   const stored = loadStoredSession();
   if (!stored?.access_token) {
     showAuthGate();
@@ -433,6 +458,22 @@ async function handleCreateAccount() {
   });
 }
 
+async function handleGoogleSignIn() {
+  const config = getSupabaseConfig();
+  if (!config) {
+    setAuthMessage("Supabase is not configured yet. Add your project URL and publishable key in config.js.", "error");
+    return;
+  }
+  sessionStorage.setItem(OAUTH_MIGRATE_KEY, els.migrateLocalInput.checked ? "1" : "0");
+  setAuthMessage("Redirecting to Google...", "");
+  setAuthButtonsDisabled(true);
+  const redirectTo = getAuthRedirectUrl();
+  const url = new URL(`${config.url}/auth/v1/authorize`);
+  url.searchParams.set("provider", "google");
+  url.searchParams.set("redirect_to", redirectTo);
+  window.location.assign(url.toString());
+}
+
 async function handlePasswordReset() {
   const email = els.authEmailInput.value.trim().toLowerCase();
   if (!email) {
@@ -476,19 +517,20 @@ async function withAuthBusy(message, callback) {
 }
 
 function setAuthButtonsDisabled(disabled) {
-  [els.signInBtn, els.createAccountBtn, els.forgotPasswordBtn].forEach((button) => {
+  [els.signInBtn, els.createAccountBtn, els.forgotPasswordBtn, els.authGoogleBtn].forEach((button) => {
     if (button) button.disabled = disabled;
   });
 }
 
-async function completeAuth(session, message) {
+async function completeAuth(session, message, options = {}) {
+  const { migrateLocalTasks = els.migrateLocalInput.checked } = options;
   const localBeforeCloudLoad = readLocalWorkspace();
   state.session = session;
   state.user = session.user || (await getCurrentUser());
   storeSession(session);
   loadPendingDeletes();
   await loadCloudTasks();
-  if (els.migrateLocalInput.checked) await migrateLocalTasksToCloud(localBeforeCloudLoad);
+  if (migrateLocalTasks) await migrateLocalTasksToCloud(localBeforeCloudLoad);
   showApp();
   toast(message);
 }
@@ -553,6 +595,34 @@ function clearStoredSession() {
   localStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(PENDING_DELETE_KEY);
   localStorage.removeItem(PENDING_MEETING_DELETE_KEY);
+}
+
+function getAuthRedirectUrl() {
+  const configured = String(window.TASKFLOW_SUPABASE?.redirectUrl || "").trim();
+  if (configured) return configured;
+  if (window.location.origin === "null") return window.location.href.split("#")[0];
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
+function readOAuthSessionFromUrl() {
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const query = new URLSearchParams(window.location.search);
+  const error = params.get("error_description") || params.get("error") || query.get("error_description") || query.get("error");
+  const accessToken = params.get("access_token");
+  if (window.location.hash || error) {
+    window.history.replaceState(null, document.title, getAuthRedirectUrl());
+  }
+  if (error) return { error };
+  if (!accessToken) return {};
+  return {
+    session: normalizeSession({
+      access_token: accessToken,
+      refresh_token: params.get("refresh_token"),
+      expires_in: Number(params.get("expires_in") || 0),
+      expires_at: Number(params.get("expires_at") || 0) || null,
+      token_type: params.get("token_type") || "bearer",
+    }),
+  };
 }
 
 async function signInWithPassword(email, password) {
