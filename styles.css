@@ -715,12 +715,14 @@ body.auth-ready .auth-gate {
 }
 
 .quick-capture textarea {
-  min-height: 34px;
-  max-height: 116px;
-  padding: 7px 0 6px;
-  line-height: 1.4;
-  overflow: hidden;
-  resize: none;
+  min-height: 70px;          /* taller for multi‑line placeholders */
+  max-height: 200px;         /* allow growth but limit */
+  padding: 10px 0;
+  line-height: 1.5;
+  white-space: pre-wrap;     /* allow text wrapping */
+  overflow-wrap: break-word;
+  overflow-y: auto;          /* scroll if content exceeds max-height */
+  resize: vertical;          /* user can drag to resize */
 }
 
 .quick-capture textarea:focus {
@@ -730,6 +732,13 @@ body.auth-ready .auth-gate {
 
 .quick-capture .lucide {
   flex: 0 0 auto;
+}
+
+.quick-capture {
+  display: flex;
+  align-items: flex-start;   /* important: keeps alignment when textarea grows */
+  gap: 10px;
+  /* keep your existing padding, border, background, etc. */
 }
 
 .top-actions {
