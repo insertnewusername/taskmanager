@@ -511,29 +511,27 @@
     </dialog>
 
     <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
-    <dialog id="welcomeDialog" class="welcome-dialog">
-      <div class="welcome-card">
-        <button class="icon-button" id="skipWelcomeBtn" type="button" aria-label="Skip welcome" title="Close">
-          <i data-lucide="x"></i>
-        </button>
-        <div class="welcome-mark brand-mark" aria-hidden="true">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <p class="eyebrow" id="welcomeEyebrow">Welcome</p>
-        <h2 id="welcomeTitle">Welcome to TaskFlow</h2>
-        <p id="welcomeBody">Start with Smart add, then organise tasks on the board, events on the calendar, and anything loose in General notes.</p>
-        <div class="welcome-steps" id="welcomeSteps" aria-label="Tutorial progress"></div>
-        <div class="welcome-actions">
-          <button class="button ghost" id="welcomeBackBtn" type="button">Back</button>
-          <button class="button primary" id="welcomeNextBtn" type="button">
-            Next
-            <i data-lucide="arrow-right"></i>
-          </button>
-        </div>
-      </div>
-    </dialog>
+<dialog id="welcomeDialog" class="welcome-dialog">
+  <div class="welcome-card">
+    <div class="welcome-mark brand-mark" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <p class="eyebrow" id="welcomeEyebrow">Welcome</p>
+    <h2 id="welcomeTitle">Welcome to TaskFlow</h2>
+    <div id="welcomeBody" class="welcome-body">
+      Start with Smart add, then organise tasks on the board, events on the calendar, and anything loose in General notes.
+    </div>
+    <div class="welcome-steps" id="welcomeSteps" aria-label="Tutorial progress"></div>
+    <div class="welcome-actions">
+      <button class="button ghost" id="welcomeBackBtn" type="button">← Back</button>
+      <button class="button primary" id="welcomeNextBtn" type="button">
+        Next →
+      </button>
+    </div>
+  </div>
+</dialog>
     <script src="vendor/lucide.min.js"></script>
     <script src="config.js"></script>
     <script src="app.js" defer></script>
