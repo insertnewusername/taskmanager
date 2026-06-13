@@ -407,16 +407,16 @@ let currentOnboardingStep = 0;
 let onboardingShown = false;
 
 function showOnboarding() {
-  if (localStorage.getItem(ONBOARDING_SEEN_KEY) === "true") {
-    // Force close any existing dialog just in case
-    const dialog = document.getElementById("welcomeDialog");
-    if (dialog && dialog.open) dialog.close();
-    return;
-  }
-  
-  // Force close any existing instance
+  // If already shown in this session, or key exists, do nothing
+  if (onboardingShown) return;
+  if (localStorage.getItem(ONBOARDING_SEEN_KEY) === "true") return;
+
+  const dialog = document.getElementById("welcomeDialog");
+  if (!dialog) return;
+
+  // Force close any existing instance (should not be open, but just in case)
   if (dialog.open) dialog.close();
-  
+
   onboardingShown = true;
   currentOnboardingStep = 0;
   updateOnboardingStep();
