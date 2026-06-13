@@ -238,6 +238,12 @@ function bindElements() {
 }
 
 function bindEvents() {
+
+  //Notes event listeners//
+  if (els.noteForm) els.noteForm.addEventListener("submit", saveNoteFromDialog);
+  if (els.closeNoteDialogBtn) els.closeNoteDialogBtn.addEventListener("click", () => els.noteDialog.close());
+  if (els.deleteNoteBtn) els.deleteNoteBtn.addEventListener("click", handleDeleteNoteFromDialog);
+  //end note event listeners//
   // Settings dialog
   if (els.settingsForm) {
     els.settingsForm.addEventListener("submit", (e) => {
@@ -2020,7 +2026,7 @@ function noteToRow(note) {
     title: note.title,
     content: note.content || "",
     created_at: note.createdAt,
-    updated_at: new Date().toISOString(),
+    updated_at: note.updatedAt || new Date().toISOString(),
   };
 }
 
@@ -2065,18 +2071,18 @@ async function syncNotesToCloud() {
     headers: { Prefer: "resolution=merge-duplicates" },
     body: JSON.stringify(rows),
   });
-  state.pendingNoteSyncIds.clear();
+  state.pendingNoteSyncIds?.clear();
 }
 
 async function deleteCloudNotes(ids) {
   if (!state.session?.access_token || !state.isOnline) {
-    ids.forEach(id => state.pendingNoteDeleteIds.add(id));
-    savePendingDeletes();
+    ids.forEach(id => state.pendingNoteDeleteIds?.add(id));
+    savePendingNoteDeletes?.();
     return;
   }
   await Promise.all(ids.map(id => restRequest(`/${NOTES_TABLE}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" })));
-  ids.forEach(id => state.pendingNoteDeleteIds.delete(id));
-  savePendingDeletes();
+  ids.forEach(id => state.pendingNoteDeleteIds?.delete(id));
+  savePendingNoteDeletes?.();
 }
 
 
