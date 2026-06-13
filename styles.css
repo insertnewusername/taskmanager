@@ -1,3 +1,24 @@
+/*fix dialog*/
+dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+dialog:not([open]) {
+  display: none;
+}
+
+dialog[open] {
+  display: flex;
+}
+/*end fix dialogue*/
+
 /*welcome dialog*/
 .welcome-dialog {
   width: 500px;
