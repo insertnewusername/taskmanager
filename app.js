@@ -396,18 +396,29 @@ function finishOnboarding() {
   // Set the flag first
   localStorage.setItem(ONBOARDING_SEEN_KEY, "true");
   
-  // Close the dialog directly
+  // Close the dialog using all possible methods
   const dialog = document.getElementById("welcomeDialog");
   if (dialog) {
     dialog.close();
-  } else if (els.welcomeDialog) {
+    // Force remove the backdrop if it lingers
+    if (dialog.open) {
+      dialog.open = false;
+    }
+  }
+  if (els.welcomeDialog) {
     els.welcomeDialog.close();
   }
   
-  // Show a toast message
-  if (typeof toast === 'function') {
-    toast("Ready to go! Start adding your first task.");
-  }
+  // Also remove any modal backdrop manually (sometimes it stays)
+  const backdrops = document.querySelectorAll("dialog::backdrop, .backdrop");
+  backdrops.forEach(b => b.remove());
+  
+  // Force a small delay to ensure the DOM updates
+  setTimeout(() => {
+    if (typeof toast === 'function') {
+      toast("Ready to go! Start adding your first task.");
+    }
+  }, 10);
 }
 function setDensityButton() {
   if (!els.densityToggle) return;
