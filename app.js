@@ -735,14 +735,10 @@ async function completeAuth(session, message, options = {}) {
   showApp();
   toast(message);
 
-  // 👇 Show onboarding for first-time users
-if (!localStorage.getItem(ONBOARDING_SEEN_KEY)) {
-  setTimeout(() => showOnboarding(), 500);
-} else {
-  // If key exists but dialog might be open (edge case), close it
-  const dialog = document.getElementById("welcomeDialog");
-  if (dialog && dialog.open) dialog.close();
-}
+  // Show onboarding for first-time users only
+  if (!localStorage.getItem(ONBOARDING_SEEN_KEY)) {
+    setTimeout(() => showOnboarding(), 500);
+  }
 }
 function loadTasks(options = {}) {
   const { allowSeed = true } = options;
