@@ -532,8 +532,10 @@ function toggleTheme() {
 }
 
 function setThemeIcon(theme) {
-  els.themeToggle.innerHTML = `<i data-lucide="${theme === "dark" ? "sun" : "moon"}"></i>`;
-  refreshIcons();
+  if (els.themeToggle) {
+    els.themeToggle.innerHTML = `<i data-lucide="${theme === "dark" ? "sun" : "moon"}"></i>`;
+    refreshIcons();
+  }
 }
 
 async function initAuth() {
