@@ -236,7 +236,7 @@ function bindElements() {
 
 function bindEvents() 
 // Settings dialog
-els.settingsForm?.addEventListener("submit", (e) => {
+els.settingsForm?.addEventListener("submit", (e) => 
   e.preventDefault();
   const theme = els.settingsThemeSelect.value;
   const density = els.settingsDensitySelect.value;
