@@ -108,53 +108,52 @@
       </aside>
 
       <main class="main-shell">
-        <header class="topbar">
-          <form class="quick-capture" id="quickForm">
-            <i data-lucide="sparkles"></i>
-            <textarea
-              id="quickInput"
-              rows="1"
-              placeholder="Describe the task, date, priority, notes, and steps..."
-              aria-label="Quick task"
-            ></textarea>
-            <button class="button primary" type="submit">
-              <i data-lucide="wand-sparkles"></i>
-              Smart add
-            </button>
-          </form>
+<header class="topbar">
+  <form class="quick-capture" id="quickForm">
+    <i data-lucide="sparkles"></i>
+    <textarea
+      id="quickInput"
+      rows="1"
+      placeholder="Describe the task, date, priority, notes, and steps..."
+      aria-label="Quick task"
+    ></textarea>
+    <button class="button primary" type="submit">
+      <i data-lucide="wand-sparkles"></i>
+      Smart add
+    </button>
+  </form>
 
-          <div class="top-actions">
-            <span class="save-status" id="saveStatus">
-              <i data-lucide="cloud"></i>
-              Sync ready
-            </span>
-            <span class="account-chip" id="accountChip">
-              <i data-lucide="user-circle"></i>
-              Account
-            </span>
-            <button class="button ghost" id="signOutBtn" type="button">
-              <i data-lucide="log-out"></i>
-              Sign out
-            </button>
-            <button class="button ghost" id="densityToggle" type="button">
-              <i data-lucide="rows-3"></i>
-              Compact
-            </button>
-            <button class="button ghost" id="importBtn" type="button">
-              <i data-lucide="upload"></i>
-              Import
-            </button>
-            <input id="importFile" type="file" accept="application/json" hidden />
-            <button class="button ghost" id="exportBtn" type="button">
-              <i data-lucide="download"></i>
-              Export
-            </button>
-            <button class="button primary" id="newTaskBtn" type="button">
-              <i data-lucide="plus"></i>
-              New task
-            </button>
-          </div>
-        </header>
+  <div class="top-actions">
+    <div class="account-dropdown" id="accountDropdown">
+      <button class="account-chip" id="accountChip">
+        <i data-lucide="user-circle"></i>
+        <span>Account</span>
+        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+      </button>
+      <div class="dropdown-menu" id="dropdownMenu">
+        <button class="dropdown-item" data-action="settings">
+          <i data-lucide="settings"></i> Settings
+        </button>
+        <button class="dropdown-item" data-action="signout">
+          <i data-lucide="log-out"></i> Sign out
+        </button>
+      </div>
+    </div>
+    <button class="button ghost" id="densityToggle" type="button">
+      <i data-lucide="rows-3"></i> Compact
+    </button>
+    <button class="button ghost" id="importBtn" type="button">
+      <i data-lucide="upload"></i> Import
+    </button>
+    <input id="importFile" type="file" accept="application/json" hidden />
+    <button class="button ghost" id="exportBtn" type="button">
+      <i data-lucide="download"></i> Export
+    </button>
+    <button class="button primary" id="newTaskBtn" type="button">
+      <i data-lucide="plus"></i> New task
+    </button>
+  </div>
+</header>
 
         <section class="metric-strip" id="metrics" aria-label="Task metrics"></section>
 
