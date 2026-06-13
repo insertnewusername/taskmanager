@@ -639,6 +639,11 @@ async function completeAuth(session, message, options = {}) {
   if (migrateLocalTasks) await migrateLocalTasksToCloud(localBeforeCloudLoad);
   showApp();
   toast(message);
+
+  // 👇 Show onboarding for first-time users
+  if (!localStorage.getItem(ONBOARDING_SEEN_KEY)) {
+    setTimeout(() => showOnboarding(), 500);
+  }
 }
 
 function loadTasks(options = {}) {
