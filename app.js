@@ -1403,6 +1403,22 @@ function renderSidebar() {
   els.completionLabel.textContent = `${percent}%`;
 }
 
+//notes dialogue//
+function openNoteDialog(note = null, presetProject = "") {
+  const title = note ? "Edit note" : "New note";
+  els.noteDialogTitle.textContent = title;
+  els.noteId.value = note?.id || "";
+  els.noteTitleInput.value = note?.title || "";
+  els.noteContentInput.value = note?.content || "";
+  els.noteProjectInput.value = note?.project || presetProject || defaultProject();
+  els.deleteNoteBtn.style.visibility = note ? "visible" : "hidden";
+  hydrateDialogOptions(); // reuses project suggestions
+  els.noteDialog.showModal();
+  els.noteTitleInput.focus();
+}
+
+//end notes dialogue//
+
 function hydrateFilterOptions() {
   const projectValue = state.filters.project;
   const tagValue = state.filters.tag;
