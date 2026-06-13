@@ -531,6 +531,55 @@
     </div>
   </div>
 </dialog>
+<!-- settings dialogue -->
+    <dialog id="settingsDialog" class="task-dialog settings-dialog">
+  <form id="settingsForm" method="dialog">
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow">Preferences</p>
+        <h2>Settings</h2>
+      </div>
+      <button class="icon-button" id="closeSettingsBtn" type="button">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <div class="form-grid">
+      <label class="form-row">
+        <span>Theme</span>
+        <select id="settingsThemeSelect">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+      <label class="form-row">
+        <span>Density</span>
+        <select id="settingsDensitySelect">
+          <option value="comfortable">Comfortable</option>
+          <option value="compact">Compact</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="settings-actions">
+      <button class="button ghost" id="settingsExportBtn" type="button">
+        <i data-lucide="download"></i> Export backup
+      </button>
+      <button class="button ghost" id="settingsImportBtn" type="button">
+        <i data-lucide="upload"></i> Import backup
+      </button>
+      <button class="button ghost danger" id="settingsClearDataBtn" type="button">
+        <i data-lucide="trash-2"></i> Clear workspace data
+      </button>
+    </div>
+
+    <div class="dialog-actions">
+      <span></span>
+      <button class="button primary" type="submit">Save & Close</button>
+    </div>
+  </form>
+</dialog>
+<!-- End settings dialogue -->
     <script src="vendor/lucide.min.js"></script>
     <script src="config.js"></script>
     <script src="app.js" defer></script>
