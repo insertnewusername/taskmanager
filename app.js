@@ -332,10 +332,11 @@ let currentOnboardingStep = 0;
 
 function showOnboarding() {
   if (localStorage.getItem(ONBOARDING_SEEN_KEY) === "true") return;
-  
-  const dialog = els.welcomeDialog;
-  if (!dialog) return;
-  
+  const dialog = document.getElementById("welcomeDialog");
+  if (!dialog) {
+    console.warn("Welcome dialog not found");
+    return;
+  }
   currentOnboardingStep = 0;
   updateOnboardingStep();
   dialog.showModal();
@@ -344,39 +345,35 @@ function showOnboarding() {
 function updateOnboardingStep() {
   const step = onboardingSteps[currentOnboardingStep];
   if (!step) return;
-  
+
   const eyebrowEl = document.getElementById("welcomeEyebrow");
   const titleEl = document.getElementById("welcomeTitle");
   const bodyEl = document.getElementById("welcomeBody");
   const stepsContainer = document.getElementById("welcomeSteps");
   const backBtn = document.getElementById("welcomeBackBtn");
   const nextBtn = document.getElementById("welcomeNextBtn");
-  
+
   if (eyebrowEl) eyebrowEl.textContent = `Step ${currentOnboardingStep + 1} of ${onboardingSteps.length}`;
   if (titleEl) titleEl.textContent = step.title;
-  if (bodyEl) bodyEl.textContent = step.body;
   
-  // Show example if present
-  let exampleHtml = "";
+  let bodyHtml = `<p>${escapeHtml(step.body)}</p>`;
   if (step.example) {
-    exampleHtml = `<div class="welcome-example"><code>${escapeHtml(step.example)}</code></div>`;
+    bodyHtml += `<div class="welcome-example"><code>${escapeHtml(step.example)}</code></div>`;
   }
-  bodyEl.innerHTML = escapeHtml(step.body) + exampleHtml;
-  
-  // Update buttons
+  if (bodyEl) bodyEl.innerHTML = bodyHtml;
+
   if (backBtn) backBtn.style.visibility = step.hideBack ? "hidden" : "visible";
   if (nextBtn) {
-    nextBtn.innerHTML = step.isLast ? 'Continue <i data-lucide="check"></i>' : 'Next <i data-lucide="arrow-right"></i>';
+    nextBtn.innerHTML = step.isLast ? 'Continue →' : 'Next →';
   }
-  
-  // Update step indicators (dots)
+
   if (stepsContainer) {
     stepsContainer.innerHTML = onboardingSteps.map((_, idx) => 
       `<span class="welcome-dot ${idx === currentOnboardingStep ? 'active' : ''}"></span>`
     ).join("");
   }
-  
-  refreshIcons();
+
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function nextOnboardingStep() {
@@ -396,10 +393,21 @@ function prevOnboardingStep() {
 }
 
 function finishOnboarding() {
+  // Set the flag first
   localStorage.setItem(ONBOARDING_SEEN_KEY, "true");
-  const dialog = els.welcomeDialog;
-  if (dialog) dialog.close();
-  toast("Ready to go! Start adding your first task.");
+  
+  // Close the dialog directly
+  const dialog = document.getElementById("welcomeDialog");
+  if (dialog) {
+    dialog.close();
+  } else if (els.welcomeDialog) {
+    els.welcomeDialog.close();
+  }
+  
+  // Show a toast message
+  if (typeof toast === 'function') {
+    toast("Ready to go! Start adding your first task.");
+  }
 }
 function setDensityButton() {
   if (!els.densityToggle) return;
