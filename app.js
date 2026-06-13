@@ -1981,7 +1981,7 @@ function autosizeQuickInput() {
     els.quickInput.style.height = "70px";
     return;
   }
-  els.quickInput.style.height = `${Math.min(116, els.quickInput.scrollHeight))}px`;
+  els.quickInput.style.height = `${Math.min(116, els.quickInput.scrollHeight)}px`;
 }
 
 function parseQuickTask(text) {
