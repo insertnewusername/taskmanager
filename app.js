@@ -322,7 +322,6 @@ if (els.signOutBtn) els.signOutBtn.addEventListener("click", handleSignOut);
     }
   });
 
-  els.importFile.addEventListener("change", importTasks);
   els.newTaskBtn.addEventListener("click", () => openTaskDialog());
   els.clearFiltersBtn.addEventListener("click", clearFilters);
 
