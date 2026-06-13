@@ -482,14 +482,16 @@ function prevOnboardingStep() {
 function finishOnboarding() {
   localStorage.setItem(ONBOARDING_SEEN_KEY, "true");
   onboardingShown = false;
-  
+
   const dialog = document.getElementById("welcomeDialog");
   if (dialog) {
     dialog.close();
-    dialog.style.display = "none";
     dialog.removeAttribute("open");
+    dialog.style.display = "none";
+    // Remove backdrop if any
+    document.querySelectorAll("dialog::backdrop").forEach(b => b.remove());
   }
-  // Also remove backdrop if any (handled by close)
+
   toast("Ready to go! Start adding your first task.");
 }
 function setDensityButton() {
