@@ -308,7 +308,7 @@ function bindEvents() {
   els.authGoogleBtn.addEventListener("click", handleGoogleSignIn);
   els.createAccountBtn.addEventListener("click", handleCreateAccount);
   els.forgotPasswordBtn.addEventListener("click", handlePasswordReset);
-  els.signOutBtn.addEventListener("click", handleSignOut);
+if (els.signOutBtn) els.signOutBtn.addEventListener("click", handleSignOut);
   els.quickForm.addEventListener("submit", handleQuickAdd);
   els.quickInput.addEventListener("input", autosizeQuickInput);
   els.quickInput.addEventListener("keydown", (event) => {
