@@ -120,6 +120,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function bindElements() {
   [
+    //Notes function//
+    "noteDialog",
+    "noteForm",
+    "noteId",
+    "noteDialogTitle",
+    "closeNoteDialogBtn",
+    "noteProjectInput",
+    "noteTitleInput",
+    "noteContentInput",
+    "deleteNoteBtn",
+    //End notes fucntion//
     //account and settings start//
     "accountDropdown",
     "dropdownMenu",
