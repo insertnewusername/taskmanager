@@ -1,3 +1,42 @@
+.welcome-dialog {
+  max-width: 500px;
+  padding: 0;
+  border: none;
+  border-radius: 1.5rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-xl);
+}
+.welcome-card {
+  padding: 2rem;
+}
+.welcome-steps {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+}
+.welcome-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.2s;
+}
+.welcome-dot.active {
+  width: 20px;
+  border-radius: 10px;
+  background: var(--accent);
+}
+.welcome-example {
+  background: var(--surface-2);
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  margin-top: 1rem;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
 :root {
   color-scheme: light;
   --bg: #f5f6f8;
