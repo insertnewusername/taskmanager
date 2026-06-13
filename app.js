@@ -3602,3 +3602,4 @@ function toast(message) {
     node.style.transform = "translateY(8px)";
   }, 2600);
   window.setTimeout(() => node.remove(), 3200);
+}
