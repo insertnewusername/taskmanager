@@ -136,7 +136,6 @@ function bindElements() {
     "welcomeTitle",
     "welcomeBody",
     "welcomeSteps",
-    "themeToggle",
     "authGate",
     "authEmailInput",
     "authPasswordForm",
@@ -307,7 +306,6 @@ function bindEvents() {
   if (els.skipWelcomeBtn) els.skipWelcomeBtn.addEventListener("click", finishOnboarding);
 
   // Other listeners
-  els.themeToggle.addEventListener("click", toggleTheme);
   els.authPasswordForm.addEventListener("submit", handleSignIn);
   els.authGoogleBtn.addEventListener("click", handleGoogleSignIn);
   els.createAccountBtn.addEventListener("click", handleCreateAccount);
