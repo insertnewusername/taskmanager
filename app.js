@@ -8,6 +8,7 @@ const PENDING_MEETING_DELETE_KEY = "taskflow.pending.meeting.deletes.v1";
 const MEETING_TIMEZONE_KEY = "taskflow.meeting.timezone.v1";
 const SUPABASE_TABLE = "tasks";
 const MEETINGS_TABLE = "meetings";
+const ONBOARDING_SEEN_KEY = "taskflow.onboarding.seen.v1";
 const MEETING_HORIZON_MONTHS = 6;
 const timezoneChoices = [
   "Australia/Sydney",
@@ -47,7 +48,27 @@ const smartViews = [
   { id: "waiting", label: "Waiting", icon: "pause-circle" },
   { id: "completed", label: "Completed", icon: "badge-check" },
 ];
-
+const onboardingSteps = [
+  {
+    title: "Welcome to TaskFlow",
+    body: "Start with Smart add, then organise tasks on the board, events on the calendar, and anything loose in General notes.",
+    hideBack: true
+  },
+  {
+    title: "Smart add",
+    body: "Just type a messy thought – TaskFlow automatically finds due dates, times, projects, tags, priorities, and subtasks.",
+    example: "“Finish report @marketing !high tomorrow 2h. Draft, review, submit”"
+  },
+  {
+    title: "Views for different moods",
+    body: "Board is for moving work, List is for scanning, Calendar is for deadlines, Events is for classes or meetings, and Focus is for getting one thing done."
+  },
+  {
+    title: "Your account keeps everything together",
+    body: "Settings lets you change timezone, theme, density, import/export backups, and clear workspace data when needed.",
+    isLast: true
+  }
+];
 const els = {};
 const selectedTasks = new Set();
 let state = {
@@ -95,6 +116,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function bindElements() {
   [
+    "welcomeDialog",
+    "welcomeNextBtn",
+    "welcomeBackBtn",
+    "skipWelcomeBtn",
+    "welcomeEyebrow",
+    "welcomeTitle",
+    "welcomeBody",
+    "welcomeSteps",
     "themeToggle",
     "authGate",
     "authEmailInput",
@@ -194,6 +223,11 @@ function bindElements() {
 }
 
 function bindEvents() {
+    // Welcome dialog onboarding
+  if (els.welcomeNextBtn) els.welcomeNextBtn.addEventListener("click", nextOnboardingStep);
+  if (els.welcomeBackBtn) els.welcomeBackBtn.addEventListener("click", prevOnboardingStep);
+  if (els.skipWelcomeBtn) els.skipWelcomeBtn.addEventListener("click", finishOnboarding);
+  //otherlisteners
   els.themeToggle.addEventListener("click", toggleTheme);
   els.densityToggle.addEventListener("click", toggleDensity);
   els.authPasswordForm.addEventListener("submit", handleSignIn);
@@ -294,7 +328,79 @@ function toggleDensity() {
   setDensityButton();
   toast(`${state.density === "compact" ? "Compact" : "Comfortable"} density`);
 }
+let currentOnboardingStep = 0;
 
+function showOnboarding() {
+  if (localStorage.getItem(ONBOARDING_SEEN_KEY) === "true") return;
+  
+  const dialog = els.welcomeDialog;
+  if (!dialog) return;
+  
+  currentOnboardingStep = 0;
+  updateOnboardingStep();
+  dialog.showModal();
+}
+
+function updateOnboardingStep() {
+  const step = onboardingSteps[currentOnboardingStep];
+  if (!step) return;
+  
+  const eyebrowEl = document.getElementById("welcomeEyebrow");
+  const titleEl = document.getElementById("welcomeTitle");
+  const bodyEl = document.getElementById("welcomeBody");
+  const stepsContainer = document.getElementById("welcomeSteps");
+  const backBtn = document.getElementById("welcomeBackBtn");
+  const nextBtn = document.getElementById("welcomeNextBtn");
+  
+  if (eyebrowEl) eyebrowEl.textContent = `Step ${currentOnboardingStep + 1} of ${onboardingSteps.length}`;
+  if (titleEl) titleEl.textContent = step.title;
+  if (bodyEl) bodyEl.textContent = step.body;
+  
+  // Show example if present
+  let exampleHtml = "";
+  if (step.example) {
+    exampleHtml = `<div class="welcome-example"><code>${escapeHtml(step.example)}</code></div>`;
+  }
+  bodyEl.innerHTML = escapeHtml(step.body) + exampleHtml;
+  
+  // Update buttons
+  if (backBtn) backBtn.style.visibility = step.hideBack ? "hidden" : "visible";
+  if (nextBtn) {
+    nextBtn.innerHTML = step.isLast ? 'Continue <i data-lucide="check"></i>' : 'Next <i data-lucide="arrow-right"></i>';
+  }
+  
+  // Update step indicators (dots)
+  if (stepsContainer) {
+    stepsContainer.innerHTML = onboardingSteps.map((_, idx) => 
+      `<span class="welcome-dot ${idx === currentOnboardingStep ? 'active' : ''}"></span>`
+    ).join("");
+  }
+  
+  refreshIcons();
+}
+
+function nextOnboardingStep() {
+  if (currentOnboardingStep + 1 < onboardingSteps.length) {
+    currentOnboardingStep++;
+    updateOnboardingStep();
+  } else {
+    finishOnboarding();
+  }
+}
+
+function prevOnboardingStep() {
+  if (currentOnboardingStep > 0) {
+    currentOnboardingStep--;
+    updateOnboardingStep();
+  }
+}
+
+function finishOnboarding() {
+  localStorage.setItem(ONBOARDING_SEEN_KEY, "true");
+  const dialog = els.welcomeDialog;
+  if (dialog) dialog.close();
+  toast("Ready to go! Start adding your first task.");
+}
 function setDensityButton() {
   if (!els.densityToggle) return;
   const compact = state.density === "compact";
