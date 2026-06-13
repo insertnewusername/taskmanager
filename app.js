@@ -381,6 +381,12 @@ function nextOnboardingStep() {
     currentOnboardingStep++;
     updateOnboardingStep();
   } else {
+    // Last step: close the dialog right away
+    const dialog = document.getElementById("welcomeDialog");
+    if (dialog) {
+      dialog.close();
+      dialog.style.display = "none";
+    }
     finishOnboarding();
   }
 }
@@ -393,32 +399,30 @@ function prevOnboardingStep() {
 }
 
 function finishOnboarding() {
-  // Set the flag first
+  // Save the flag first
   localStorage.setItem(ONBOARDING_SEEN_KEY, "true");
   
-  // Close the dialog using all possible methods
+  // Get the dialog element
   const dialog = document.getElementById("welcomeDialog");
   if (dialog) {
+    // Standard close
     dialog.close();
-    // Force remove the backdrop if it lingers
-    if (dialog.open) {
-      dialog.open = false;
-    }
+    // Remove the open attribute manually
+    dialog.removeAttribute("open");
+    // Force hide via inline style
+    dialog.style.display = "none";
   }
+  
+  // Also handle if stored in els
   if (els.welcomeDialog) {
     els.welcomeDialog.close();
+    els.welcomeDialog.style.display = "none";
   }
   
-  // Also remove any modal backdrop manually (sometimes it stays)
-  const backdrops = document.querySelectorAll("dialog::backdrop, .backdrop");
-  backdrops.forEach(b => b.remove());
-  
-  // Force a small delay to ensure the DOM updates
-  setTimeout(() => {
-    if (typeof toast === 'function') {
-      toast("Ready to go! Start adding your first task.");
-    }
-  }, 10);
+  // Show the toast
+  if (typeof toast === 'function') {
+    toast("Ready to go! Start adding your first task.");
+  }
 }
 function setDensityButton() {
   if (!els.densityToggle) return;
