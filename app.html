@@ -108,6 +108,7 @@
       </aside>
 
       <main class="main-shell">
+        <!-- Start topbar -->
 <header class="topbar">
   <form class="quick-capture" id="quickForm">
     <i data-lucide="sparkles"></i>
@@ -124,6 +125,10 @@
   </form>
 
   <div class="top-actions">
+    <button class="icon-button" id="themeToggle" type="button" title="Toggle theme">
+      <i data-lucide="moon"></i>
+    </button>
+
     <div class="account-dropdown" id="accountDropdown">
       <button class="account-chip" id="accountChip">
         <i data-lucide="user-circle"></i>
@@ -139,21 +144,13 @@
         </button>
       </div>
     </div>
-    <button class="button ghost" id="densityToggle" type="button">
-      <i data-lucide="rows-3"></i> Compact
-    </button>
-    <button class="button ghost" id="importBtn" type="button">
-      <i data-lucide="upload"></i> Import
-    </button>
-    <input id="importFile" type="file" accept="application/json" hidden />
-    <button class="button ghost" id="exportBtn" type="button">
-      <i data-lucide="download"></i> Export
-    </button>
+
     <button class="button primary" id="newTaskBtn" type="button">
       <i data-lucide="plus"></i> New task
     </button>
   </div>
 </header>
+        <!-- END TOPBAR -->
 
         <section class="metric-strip" id="metrics" aria-label="Task metrics"></section>
 
