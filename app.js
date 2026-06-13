@@ -741,7 +741,7 @@ if (!localStorage.getItem(ONBOARDING_SEEN_KEY)) {
   const dialog = document.getElementById("welcomeDialog");
   if (dialog && dialog.open) dialog.close();
 }
-
+}
 function loadTasks(options = {}) {
   const { allowSeed = true } = options;
   const raw = localStorage.getItem(STORAGE_KEY);
