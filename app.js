@@ -1552,7 +1552,38 @@ function updateViewVisibility() {
 
 function renderBoard() {
   const tasks = filteredTasks();
-  els.boardView.innerHTML = `
+  const selectedProject = state.filters.project !== "all" ? state.filters.project : null;
+  const projectNotes = selectedProject
+    ? state.notes.filter(n => n.project === selectedProject)
+    : [];   // Only show notes when a specific project is selected
+
+  // Build notes section HTML (if project is selected)
+  let notesHtml = '';
+  if (selectedProject) {
+    notesHtml = `
+      <div class="board-notes-section">
+        <div class="board-notes-header">
+          <h3>📝 Notes for ${escapeHtml(selectedProject)}</h3>
+          <button class="button ghost" id="boardAddNoteBtn"><i data-lucide="plus"></i> Add note</button>
+        </div>
+        <div class="board-notes-horizontal">
+          ${projectNotes.length ? projectNotes.map(note => `
+            <div class="board-note-card" data-note-id="${note.id}">
+              <div class="board-note-title">${escapeHtml(note.title)}</div>
+              <div class="board-note-content">${escapeHtml(note.content || '')}</div>
+              <div class="board-note-actions">
+                <button class="chip-button note-edit" data-id="${note.id}"><i data-lucide="pencil"></i></button>
+                <button class="chip-button note-delete" data-id="${note.id}"><i data-lucide="trash-2"></i></button>
+              </div>
+            </div>
+          `).join('') : '<div class="empty-notes-horizontal">No notes. Click "Add note" to create one.</div>'}
+        </div>
+      </div>
+    `;
+  }
+
+  // Kanban board HTML
+  const kanbanHtml = `
     <div class="kanban">
       ${statuses
         .map((status) => {
@@ -1574,6 +1605,33 @@ function renderBoard() {
     </div>
   `;
 
+  els.boardView.innerHTML = notesHtml + kanbanHtml;
+
+  // Attach event listeners for notes section (if it exists)
+  if (selectedProject) {
+    const addBtn = document.getElementById("boardAddNoteBtn");
+    if (addBtn) {
+      addBtn.addEventListener("click", () => openNoteDialog(null, selectedProject));
+    }
+    document.querySelectorAll(".board-note-card .note-edit").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const id = btn.dataset.id;
+        const note = state.notes.find(n => n.id === id);
+        if (note) openNoteDialog(note, note.project);
+      });
+    });
+    document.querySelectorAll(".board-note-card .note-delete").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        const id = btn.dataset.id;
+        if (confirm("Delete this note?")) {
+          await deleteNote(id);
+          renderBoard(); // re-render board after deletion
+        }
+      });
+    });
+  }
+
+  // Existing drag & drop listeners
   els.boardView.querySelectorAll(".task-card").forEach((card) => {
     card.addEventListener("dragstart", () => card.classList.add("dragging"));
     card.addEventListener("dragend", () => card.classList.remove("dragging"));
@@ -1594,6 +1652,41 @@ function renderBoard() {
   });
 
   bindTaskCardActions(els.boardView);
+  refreshIcons();
+}
+
+function renderNotesStrip(notes, projectName) {
+  if (!notes.length) {
+    return `
+      <div class="board-notes-strip">
+        <div class="board-notes-header">
+          <span>📝 Notes for ${escapeHtml(projectName)}</span>
+          <button class="button ghost" id="addNoteBtnBoard"><i data-lucide="plus"></i> Add note</button>
+        </div>
+        <div class="board-notes-empty">No notes yet. Click + to add a note.</div>
+      </div>
+    `;
+  }
+  return `
+    <div class="board-notes-strip">
+      <div class="board-notes-header">
+        <span>📝 Notes for ${escapeHtml(projectName)}</span>
+        <button class="button ghost" id="addNoteBtnBoard"><i data-lucide="plus"></i> Add note</button>
+      </div>
+      <div class="board-notes-horizontal">
+        ${notes.map(note => `
+          <div class="board-note-card">
+            <div class="board-note-title">${escapeHtml(note.title)}</div>
+            <div class="board-note-content">${escapeHtml(note.content || '')}</div>
+            <div class="board-note-actions">
+              <button class="chip-button note-edit-board" data-id="${note.id}" title="Edit"><i data-lucide="pencil"></i></button>
+              <button class="chip-button note-delete-board" data-id="${note.id}" title="Delete"><i data-lucide="trash-2"></i></button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
 }
 
 function renderColumnEmpty(statusId) {
