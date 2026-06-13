@@ -106,44 +106,42 @@
 
       <main class="main-shell">
         <!-- Start topbar -->
-<header class="topbar">
-  <form class="quick-capture" id="quickForm">
-    <i data-lucide="sparkles"></i>
-    <textarea
-      id="quickInput"
-      rows="1"
-      placeholder="Describe the task, date, priority, notes, and steps..."
-      aria-label="Quick task"
-    ></textarea>
-    <button class="button primary" type="submit">
-      <i data-lucide="wand-sparkles"></i>
-      Smart add
-    </button>
-  </form>
+        <header class="topbar">
+          <form class="quick-capture" id="quickForm">
+            <i data-lucide="sparkles"></i>
+            <textarea
+              id="quickInput"
+              rows="1"
+              placeholder="Describe the task, date, priority, notes, and steps..."
+              aria-label="Quick task"
+            ></textarea>
+            <button class="button primary" type="submit">
+              <i data-lucide="wand-sparkles"></i>
+              Smart add
+            </button>
+          </form>
 
-  <div class="top-actions">
-
-    <div class="account-dropdown" id="accountDropdown">
-      <button class="account-chip" id="accountChip">
-        <i data-lucide="user-circle"></i>
-        <span>Account</span>
-        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
-      </button>
-      <div class="dropdown-menu" id="dropdownMenu">
-        <button class="dropdown-item" data-action="settings">
-          <i data-lucide="settings"></i> Settings
-        </button>
-        <button class="dropdown-item" data-action="signout">
-          <i data-lucide="log-out"></i> Sign out
-        </button>
-      </div>
-    </div>
-
-    <button class="button primary" id="newTaskBtn" type="button">
-      <i data-lucide="plus"></i> New task
-    </button>
-  </div>
-</header>
+          <div class="top-actions">
+            <div class="account-dropdown" id="accountDropdown">
+              <button class="account-chip" id="accountChip">
+                <i data-lucide="user-circle"></i>
+                <span>Account</span>
+                <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+              </button>
+              <div class="dropdown-menu" id="dropdownMenu">
+                <button class="dropdown-item" data-action="settings">
+                  <i data-lucide="settings"></i> Settings
+                </button>
+                <button class="dropdown-item" data-action="signout">
+                  <i data-lucide="log-out"></i> Sign out
+                </button>
+              </div>
+            </div>
+            <button class="button primary" id="newTaskBtn" type="button">
+              <i data-lucide="plus"></i> New task
+            </button>
+          </div>
+        </header>
         <!-- END TOPBAR -->
 
         <section class="metric-strip" id="metrics" aria-label="Task metrics"></section>
@@ -500,78 +498,112 @@
       </form>
     </dialog>
 
+    <dialog id="settingsDialog" class="task-dialog settings-dialog">
+      <form id="settingsForm" method="dialog">
+        <div class="dialog-header">
+          <div>
+            <p class="eyebrow">Preferences</p>
+            <h2>Settings</h2>
+          </div>
+          <button class="icon-button" id="closeSettingsBtn" type="button">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <div class="form-grid">
+          <label class="form-row">
+            <span>Theme</span>
+            <select id="settingsThemeSelect">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </label>
+          <label class="form-row">
+            <span>Density</span>
+            <select id="settingsDensitySelect">
+              <option value="comfortable">Comfortable</option>
+              <option value="compact">Compact</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="settings-actions">
+          <button class="button ghost" id="settingsExportBtn" type="button">
+            <i data-lucide="download"></i> Export backup
+          </button>
+          <button class="button ghost" id="settingsImportBtn" type="button">
+            <i data-lucide="upload"></i> Import backup
+          </button>
+          <button class="button ghost danger" id="settingsClearDataBtn" type="button">
+            <i data-lucide="trash-2"></i> Clear workspace data
+          </button>
+        </div>
+
+        <div class="dialog-actions">
+          <span></span>
+          <button class="button primary" type="submit">Save & Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="welcomeDialog" class="welcome-dialog">
+      <div class="welcome-card">
+        <div class="welcome-mark brand-mark" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <p class="eyebrow" id="welcomeEyebrow">Welcome</p>
+        <h2 id="welcomeTitle">Welcome to TaskFlow</h2>
+        <div id="welcomeBody" class="welcome-body">
+          Start with Smart add, then organise tasks on the board, events on the calendar, and anything loose in General notes.
+        </div>
+        <div class="welcome-steps" id="welcomeSteps" aria-label="Tutorial progress"></div>
+        <div class="welcome-actions">
+          <button class="button ghost" id="welcomeBackBtn" type="button">← Back</button>
+          <button class="button primary" id="welcomeNextBtn" type="button">
+            Next →
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Note Dialog -->
+    <dialog id="noteDialog" class="task-dialog">
+      <form id="noteForm" method="dialog">
+        <input type="hidden" id="noteId" />
+        <div class="dialog-header">
+          <div>
+            <p class="eyebrow">Note</p>
+            <h2 id="noteDialogTitle">New note</h2>
+          </div>
+          <button class="icon-button" id="closeNoteDialogBtn" type="button">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <label class="form-row full">
+          <span>Project</span>
+          <input id="noteProjectInput" type="text" list="projectSuggestions" maxlength="32" />
+        </label>
+        <label class="form-row full">
+          <span>Title</span>
+          <input id="noteTitleInput" type="text" required maxlength="120" />
+        </label>
+        <label class="form-row full">
+          <span>Content</span>
+          <textarea id="noteContentInput" rows="5" maxlength="1000"></textarea>
+        </label>
+        <div class="dialog-actions">
+          <button class="button ghost danger" id="deleteNoteBtn" type="button" style="visibility: hidden">Delete</button>
+          <span></span>
+          <button class="button primary" type="submit">Save note</button>
+        </div>
+      </form>
+    </dialog>
+
     <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
     <input id="importFile" type="file" accept="application/json" hidden />
-<dialog id="welcomeDialog" class="welcome-dialog">
-  <div class="welcome-card">
-    <div class="welcome-mark brand-mark" aria-hidden="true">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-    <p class="eyebrow" id="welcomeEyebrow">Welcome</p>
-    <h2 id="welcomeTitle">Welcome to TaskFlow</h2>
-    <div id="welcomeBody" class="welcome-body">
-      Start with Smart add, then organise tasks on the board, events on the calendar, and anything loose in General notes.
-    </div>
-    <div class="welcome-steps" id="welcomeSteps" aria-label="Tutorial progress"></div>
-    <div class="welcome-actions">
-      <button class="button ghost" id="welcomeBackBtn" type="button">← Back</button>
-      <button class="button primary" id="welcomeNextBtn" type="button">
-        Next →
-      </button>
-    </div>
-  </div>
-</dialog>
-<!-- settings dialogue -->
-    <dialog id="settingsDialog" class="task-dialog settings-dialog">
-  <form id="settingsForm" method="dialog">
-    <div class="dialog-header">
-      <div>
-        <p class="eyebrow">Preferences</p>
-        <h2>Settings</h2>
-      </div>
-      <button class="icon-button" id="closeSettingsBtn" type="button">
-        <i data-lucide="x"></i>
-      </button>
-    </div>
 
-    <div class="form-grid">
-      <label class="form-row">
-        <span>Theme</span>
-        <select id="settingsThemeSelect">
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-      </label>
-      <label class="form-row">
-        <span>Density</span>
-        <select id="settingsDensitySelect">
-          <option value="comfortable">Comfortable</option>
-          <option value="compact">Compact</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="settings-actions">
-      <button class="button ghost" id="settingsExportBtn" type="button">
-        <i data-lucide="download"></i> Export backup
-      </button>
-      <button class="button ghost" id="settingsImportBtn" type="button">
-        <i data-lucide="upload"></i> Import backup
-      </button>
-      <button class="button ghost danger" id="settingsClearDataBtn" type="button">
-        <i data-lucide="trash-2"></i> Clear workspace data
-      </button>
-    </div>
-
-    <div class="dialog-actions">
-      <span></span>
-      <button class="button primary" type="submit">Save & Close</button>
-    </div>
-  </form>
-</dialog>
-<!-- End settings dialogue -->
     <script src="vendor/lucide.min.js"></script>
     <script src="config.js"></script>
     <script src="app.js" defer></script>
