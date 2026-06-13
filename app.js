@@ -1,4 +1,5 @@
 const STORAGE_KEY = "taskflow.tasks.v1";
+const NOTES_TABLE = "notes";
 const THEME_KEY = "taskflow.theme.v1";
 const DENSITY_KEY = "taskflow.density.v1";
 const SESSION_KEY = "taskflow.supabase.session.v1";
@@ -74,6 +75,9 @@ const selectedTasks = new Set();
 let state = {
   tasks: [],
   meetings: [],
+  notes: [],
+  pendingNoteSyncIds: new Set(),
+  pendingNoteDeleteIds: new Set(),
   user: null,
   session: null,
   isOnline: navigator.onLine,
@@ -746,6 +750,7 @@ function loadTasks(options = {}) {
   if (!raw) {
     state.tasks = allowSeed ? seedTasks() : [];
     state.meetings = [];
+    state.notes = [];                     // <-- initialize empty notes
     if (allowSeed) persist();
     return;
   }
@@ -754,14 +759,15 @@ function loadTasks(options = {}) {
     const parsed = JSON.parse(raw);
     state.tasks = Array.isArray(parsed.tasks) ? parsed.tasks.map(normalizeTask) : [];
     state.meetings = Array.isArray(parsed.meetings) ? parsed.meetings.map(normalizeMeeting) : [];
+    state.notes = Array.isArray(parsed.notes) ? parsed.notes.map(normalizeNote) : [];  // <-- load notes
     topUpRecurringMeetings();
   } catch {
     state.tasks = allowSeed ? seedTasks() : [];
     state.meetings = [];
+    state.notes = [];
     if (allowSeed) persist();
   }
 }
-
 function persist() {
   const savedAt = new Date();
   localStorage.setItem(
@@ -770,6 +776,7 @@ function persist() {
       exportedAt: savedAt.toISOString(),
       tasks: state.tasks,
       meetings: state.meetings,
+      notes: state.notes,            // <-- added notes
     })
   );
   updateSaveStatus(savedAt);
@@ -778,11 +785,11 @@ function persist() {
       console.warn("TaskFlow sync failed", error);
       state.tasks.forEach((task) => state.pendingSyncIds.add(task.id));
       state.meetings.forEach((meeting) => state.pendingMeetingSyncIds.add(meeting.id));
+      state.notes.forEach((note) => state.pendingNoteSyncIds.add(note.id));   // <-- track pending note syncs
       updateSaveStatus();
     });
   }
 }
-
 function loadStoredSession() {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
@@ -954,22 +961,40 @@ async function loadCloudTasks() {
 }
 
 async function migrateLocalTasksToCloud(localWorkspaceToMigrate = readLocalWorkspace()) {
-  const localTasks = localWorkspaceToMigrate.tasks.filter((task) => !state.tasks.some((cloudTask) => cloudTask.id === task.id));
-  const localMeetings = localWorkspaceToMigrate.meetings.filter((meeting) => !state.meetings.some((cloudMeeting) => cloudMeeting.id === meeting.id));
-  if (!localTasks.length && !localMeetings.length) return;
+  // Migrate tasks
+  const localTasks = localWorkspaceToMigrate.tasks.filter(
+    (task) => !state.tasks.some((cloudTask) => cloudTask.id === task.id)
+  );
+  // Migrate meetings
+  const localMeetings = localWorkspaceToMigrate.meetings.filter(
+    (meeting) => !state.meetings.some((cloudMeeting) => cloudMeeting.id === meeting.id)
+  );
+  // Migrate notes
+  const localNotes = (localWorkspaceToMigrate.notes || []).filter(
+    (note) => !state.notes.some((cloudNote) => cloudNote.id === note.id)
+  );
+
+  if (!localTasks.length && !localMeetings.length && !localNotes.length) return;
+
+  // Merge tasks, meetings, notes
   state.tasks = sortTasks([...localTasks, ...state.tasks].map(normalizeTask), "created");
   state.meetings = sortMeetings([...localMeetings, ...state.meetings].map(normalizeMeeting));
+  state.notes = [...localNotes, ...state.notes].map(normalizeNote);
+
+  // Sync everything to cloud
   await syncAllWorkspace();
+
+  // Persist merged data to local storage
   localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify({
       exportedAt: new Date().toISOString(),
       tasks: state.tasks,
       meetings: state.meetings,
+      notes: state.notes,
     })
   );
 }
-
 function readLocalTasks() {
   return readLocalWorkspace().tasks;
 }
@@ -987,25 +1012,44 @@ function readLocalWorkspace() {
   }
 }
 
-async function syncAllTasks() {
-  return syncAllWorkspace();
-}
-
 async function syncAllWorkspace() {
+  // Sync tasks
   if (!state.isOnline || !state.session?.access_token || !state.user?.id || !state.tasks.length) {
     updateSaveStatus();
   } else {
     const rows = state.tasks.map(taskToRow);
     await restRequest(`/${SUPABASE_TABLE}?on_conflict=id`, {
       method: "POST",
-      headers: {
-        Prefer: "resolution=merge-duplicates",
-      },
+      headers: { Prefer: "resolution=merge-duplicates" },
       body: JSON.stringify(rows),
     });
     state.pendingSyncIds.clear();
   }
 
+  // Sync meetings
+  if (state.isOnline && state.session?.access_token && state.user?.id && state.meetings.length) {
+    const meetingRows = state.meetings.map(meetingToRow);
+    await restRequest(`/${MEETINGS_TABLE}?on_conflict=id`, {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates" },
+      body: JSON.stringify(meetingRows),
+    });
+    state.pendingMeetingSyncIds.clear();
+  }
+
+  // Sync notes
+  if (state.isOnline && state.session?.access_token && state.user?.id && state.notes.length) {
+    const noteRows = state.notes.map(noteToRow);
+    await restRequest(`/${NOTES_TABLE}?on_conflict=id`, {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates" },
+      body: JSON.stringify(noteRows),
+    });
+    state.pendingNoteSyncIds.clear();
+  }
+
+  updateSaveStatus();
+}
   if (state.isOnline && state.session?.access_token && state.user?.id && state.meetings.length) {
     const meetingRows = state.meetings.map(meetingToRow);
     await restRequest(`/${MEETINGS_TABLE}?on_conflict=id`, {
@@ -1799,6 +1843,90 @@ function renderCalendarDay(day, monthStart, tasksByDate, meetingsByDate) {
     </div>
   `;
 }
+
+async function loadCloudNotes() {
+  try {
+    const rows = await restRequest(`/${NOTES_TABLE}?select=*&order=created_at.desc`, { method: "GET" });
+    state.notes = Array.isArray(rows) ? rows.map(rowToNote).filter(n => !state.pendingNoteDeleteIds.has(n.id)) : [];
+  } catch (error) {
+    console.warn("Notes sync unavailable", error);
+    state.notes = readLocalWorkspace().notes || [];
+  }
+}
+
+function noteToRow(note) {
+  return {
+    id: note.id,
+    user_id: state.user.id,
+    project: note.project,
+    title: note.title,
+    content: note.content || "",
+    created_at: note.createdAt,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+function rowToNote(row) {
+  return {
+    id: row.id,
+    project: row.project,
+    title: row.title,
+    content: row.content || "",
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function normalizeNote(note) {
+  return {
+    id: note.id || uid(),
+    project: note.project || "Inbox",
+    title: cleanTitle(note.title || "Untitled note"),
+    content: note.content || "",
+    createdAt: note.createdAt || new Date().toISOString(),
+    updatedAt: note.updatedAt || new Date().toISOString(),
+  };
+}
+
+async function saveNote(note) {
+  const existing = state.notes.find(n => n.id === note.id);
+  if (existing) {
+    state.notes = state.notes.map(n => n.id === note.id ? note : n);
+  } else {
+    state.notes = [note, ...state.notes];
+  }
+  persist();
+  await syncNotesToCloud();
+}
+
+async function deleteNote(id) {
+  state.notes = state.notes.filter(n => n.id !== id);
+  persist();
+  await deleteCloudNotes([id]);
+}
+
+async function syncNotesToCloud() {
+  if (!state.isOnline || !state.session?.access_token || !state.user?.id || !state.notes.length) return;
+  const rows = state.notes.map(noteToRow);
+  await restRequest(`/${NOTES_TABLE}?on_conflict=id`, {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates" },
+    body: JSON.stringify(rows),
+  });
+  state.pendingNoteSyncIds.clear();
+}
+
+async function deleteCloudNotes(ids) {
+  if (!state.session?.access_token || !state.isOnline) {
+    ids.forEach(id => state.pendingNoteDeleteIds.add(id));
+    savePendingDeletes();
+    return;
+  }
+  await Promise.all(ids.map(id => restRequest(`/${NOTES_TABLE}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" })));
+  ids.forEach(id => state.pendingNoteDeleteIds.delete(id));
+  savePendingDeletes();
+}
+
 
 function renderMeetings() {
   const meetings = sortMeetings([...state.meetings]);
