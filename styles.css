@@ -763,68 +763,51 @@ body.auth-ready .auth-gate {
 }
 
 .quick-capture {
-  display: grid;
-  grid-template-columns: auto minmax(160px, 1fr) auto;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
   gap: 10px;
   flex: 1 1 auto;
+  max-width: 560px;          /* limit width */
   min-height: 50px;
-  max-width: 840px;
-  padding: 7px 8px 7px 14px;
+  padding: 8px 12px 8px 16px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: 0 10px 24px rgba(20, 30, 36, 0.06);
-  transition:
-    border-color var(--motion-med) var(--ease-out),
-    box-shadow var(--motion-med) var(--ease-out),
-    transform var(--motion-med) var(--ease-out);
+  transition: all 0.2s;
 }
 
 .quick-capture:focus-within {
   border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
-  box-shadow: 0 16px 32px rgba(19, 122, 99, 0.12);
+  box-shadow: 0 12px 24px rgba(19, 122, 99, 0.1);
   transform: translateY(-1px);
 }
 
-.quick-capture textarea,
-.search-field input {
-  appearance: none;
-  min-width: 0;
-  width: 100%;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  box-shadow: none;
-  color: var(--ink);
-  font: inherit;
-}
-
 .quick-capture textarea {
-  min-height: 70px;          /* taller for multi‑line placeholders */
-  max-height: 200px;         /* allow growth but limit */
-  padding: 10px 0;
-  line-height: 1.5;
-  white-space: pre-wrap;     /* allow text wrapping */
+  flex: 1;
+  min-height: 38px;          /* compact default height */
+  max-height: 120px;
+  padding: 6px 0;
+  line-height: 1.4;
+  white-space: pre-wrap;
   overflow-wrap: break-word;
-  overflow-y: auto;          /* scroll if content exceeds max-height */
-  resize: vertical;          /* user can drag to resize */
+  overflow-y: auto;
+  resize: vertical;
+  background: transparent;
+  border: none;
+  outline: none;
+  font: inherit;
+  color: var(--ink);
 }
 
 .quick-capture textarea:focus {
-  outline: 0;
+  outline: none;
   box-shadow: none;
 }
 
 .quick-capture .lucide {
   flex: 0 0 auto;
-}
-
-.quick-capture {
-  display: flex;
-  align-items: flex-start;   /* important: keeps alignment when textarea grows */
-  gap: 10px;
-  /* keep your existing padding, border, background, etc. */
+  margin-top: 4px;           /* align icon with first line of text */
 }
 
 .top-actions {
