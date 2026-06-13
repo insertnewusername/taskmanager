@@ -1404,7 +1404,13 @@ function renderSidebar() {
 }
 
 //notes dialogue//
+// ----- Note Dialog Functions -----
 function openNoteDialog(note = null, presetProject = "") {
+  // Ensure dialog elements exist
+  if (!els.noteDialog || !els.noteTitleInput) {
+    console.error("Note dialog elements not found");
+    return;
+  }
   const title = note ? "Edit note" : "New note";
   els.noteDialogTitle.textContent = title;
   els.noteId.value = note?.id || "";
@@ -1412,11 +1418,55 @@ function openNoteDialog(note = null, presetProject = "") {
   els.noteContentInput.value = note?.content || "";
   els.noteProjectInput.value = note?.project || presetProject || defaultProject();
   els.deleteNoteBtn.style.visibility = note ? "visible" : "hidden";
-  hydrateDialogOptions(); // reuses project suggestions
+  // Refresh project datalist
+  if (els.projectSuggestions) {
+    els.projectSuggestions.innerHTML = getProjects()
+      .map(project => `<option value="${escapeAttr(project)}"></option>`)
+      .join("");
+  }
   els.noteDialog.showModal();
   els.noteTitleInput.focus();
 }
 
+async function saveNoteFromDialog(e) {
+  e.preventDefault();
+  const id = els.noteId.value || uid();
+  const note = normalizeNote({
+    id,
+    project: els.noteProjectInput.value.trim() || defaultProject(),
+    title: els.noteTitleInput.value.trim(),
+    content: els.noteContentInput.value.trim(),
+    createdAt: state.notes.find(n => n.id === id)?.createdAt || new Date().toISOString(),
+  });
+  const existing = state.notes.find(n => n.id === id);
+  if (existing) {
+    state.notes = state.notes.map(n => n.id === id ? note : n);
+  } else {
+    state.notes = [note, ...state.notes];
+  }
+  persist();
+  await syncNotesToCloud();
+  els.noteDialog.close();
+  renderAll();
+  toast(existing ? "Note updated" : "Note created");
+}
+
+async function deleteNote(id) {
+  state.notes = state.notes.filter(n => n.id !== id);
+  persist();
+  await deleteCloudNotes([id]);
+}
+
+function handleDeleteNoteFromDialog() {
+  const id = els.noteId.value;
+  if (!id) return;
+  confirmAction("Delete note?", "This note will be permanently removed.", async () => {
+    await deleteNote(id);
+    els.noteDialog.close();
+    renderAll();
+    toast("Note deleted");
+  });
+}
 //end notes dialogue//
 
 function hydrateFilterOptions() {
@@ -2005,12 +2055,6 @@ async function saveNote(note) {
   }
   persist();
   await syncNotesToCloud();
-}
-
-async function deleteNote(id) {
-  state.notes = state.notes.filter(n => n.id !== id);
-  persist();
-  await deleteCloudNotes([id]);
 }
 
 async function syncNotesToCloud() {
