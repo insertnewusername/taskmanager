@@ -23,10 +23,10 @@ const timezoneChoices = [
   "Asia/Tokyo",
 ];
 const quickPlaceholders = [
-  "I need to prep the launch deck by Friday. Make outline, design slides, review with Sam.",
-  "Sometime next week remind me to chase invoices, low energy, maybe admin.",
-  "High priority: book dentist tomorrow morning and add steps for call, forms, calendar.",
-  "Ramble here. Smart add will pull out dates, tags, notes, and subtasks.",
+  "Submit timesheet @admin !medium tomorrow 10m",
+  "Write blog post #writing !high next Friday. Research, outline, draft, edit",
+  "Fix login bug urgent @backend 90m",
+  "Project, !priority, @tag, !date time",
 ];
 
 const statuses = [
