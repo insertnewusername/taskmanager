@@ -1607,29 +1607,41 @@ function renderBoard() {
 
   els.boardView.innerHTML = notesHtml + kanbanHtml;
 
-  // Attach event listeners for notes section (if it exists)
-  if (selectedProject) {
-    const addBtn = document.getElementById("boardAddNoteBtn");
-    if (addBtn) {
-      addBtn.addEventListener("click", () => openNoteDialog(null, selectedProject));
-    }
-    document.querySelectorAll(".board-note-card .note-edit").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        const id = btn.dataset.id;
-        const note = state.notes.find(n => n.id === id);
-        if (note) openNoteDialog(note, note.project);
-      });
-    });
-    document.querySelectorAll(".board-note-card .note-delete").forEach(btn => {
-      btn.addEventListener("click", async (e) => {
-        const id = btn.dataset.id;
-        if (confirm("Delete this note?")) {
-          await deleteNote(id);
-          renderBoard(); // re-render board after deletion
-        }
-      });
+// Attach event listeners for notes section (if it exists)
+if (selectedProject) {
+  const addBtn = document.getElementById("boardAddNoteBtn");
+  if (addBtn) {
+    addBtn.addEventListener("click", () => {
+      if (typeof openNoteDialog === 'function') {
+        openNoteDialog(null, selectedProject);
+      } else {
+        console.warn("openNoteDialog is not defined");
+      }
     });
   }
+  document.querySelectorAll(".board-note-card .note-edit").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const id = btn.dataset.id;
+      const note = state.notes.find(n => n.id === id);
+      if (note && typeof openNoteDialog === 'function') {
+        openNoteDialog(note, note.project);
+      }
+    });
+  });
+  document.querySelectorAll(".board-note-card .note-delete").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      const id = btn.dataset.id;
+      if (confirm("Delete this note?")) {
+        if (typeof deleteNote === 'function') {
+          await deleteNote(id);
+          renderBoard(); // re-render board after deletion
+        } else {
+          console.warn("deleteNote is not defined");
+        }
+      }
+    });
+  });
+}
 
   // Existing drag & drop listeners
   els.boardView.querySelectorAll(".task-card").forEach((card) => {
