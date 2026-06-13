@@ -1050,19 +1050,6 @@ async function syncAllWorkspace() {
 
   updateSaveStatus();
 }
-  if (state.isOnline && state.session?.access_token && state.user?.id && state.meetings.length) {
-    const meetingRows = state.meetings.map(meetingToRow);
-    await restRequest(`/${MEETINGS_TABLE}?on_conflict=id`, {
-      method: "POST",
-      headers: {
-        Prefer: "resolution=merge-duplicates",
-      },
-      body: JSON.stringify(meetingRows),
-    });
-    state.pendingMeetingSyncIds.clear();
-  }
-  updateSaveStatus();
-}
 
 async function syncPendingTasks() {
   if (!state.session?.access_token) return;
