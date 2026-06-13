@@ -26,7 +26,7 @@ const quickPlaceholders = [
   "Submit timesheet @admin !medium tomorrow 10m",
   "Write blog post #writing !high next Friday. Research, outline, draft, edit",
   "Fix login bug urgent @backend 90m",
-  "Project, !priority, @tag, !date time",
+  "Project, @tags, !priority, !date time",
 ];
 
 const statuses = [
