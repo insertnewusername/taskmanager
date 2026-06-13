@@ -303,7 +303,6 @@ function bindEvents() {
 
   // Other listeners
   els.themeToggle.addEventListener("click", toggleTheme);
-  els.densityToggle.addEventListener("click", toggleDensity);
   els.authPasswordForm.addEventListener("submit", handleSignIn);
   els.authGoogleBtn.addEventListener("click", handleGoogleSignIn);
   els.createAccountBtn.addEventListener("click", handleCreateAccount);
@@ -317,9 +316,8 @@ if (els.signOutBtn) els.signOutBtn.addEventListener("click", handleSignOut);
       els.quickForm.requestSubmit();
     }
   });
-  els.importBtn.addEventListener("click", () => els.importFile.click());
+
   els.importFile.addEventListener("change", importTasks);
-  els.exportBtn.addEventListener("click", exportTasks);
   els.newTaskBtn.addEventListener("click", () => openTaskDialog());
   els.clearFiltersBtn.addEventListener("click", clearFilters);
 
