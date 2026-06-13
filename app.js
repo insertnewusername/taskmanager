@@ -404,13 +404,20 @@ function toggleDensity() {
 }
 let currentOnboardingStep = 0;
 
+let onboardingShown = false;
+
 function showOnboarding() {
+  // If already shown in this session, or key exists, do nothing
+  if (onboardingShown) return;
   if (localStorage.getItem(ONBOARDING_SEEN_KEY) === "true") return;
+  
   const dialog = document.getElementById("welcomeDialog");
-  if (!dialog) {
-    console.warn("Welcome dialog not found");
-    return;
-  }
+  if (!dialog) return;
+  
+  // Force close any existing instance
+  if (dialog.open) dialog.close();
+  
+  onboardingShown = true;
   currentOnboardingStep = 0;
   updateOnboardingStep();
   dialog.showModal();
@@ -473,30 +480,17 @@ function prevOnboardingStep() {
 }
 
 function finishOnboarding() {
-  // Save the flag first
   localStorage.setItem(ONBOARDING_SEEN_KEY, "true");
+  onboardingShown = false;
   
-  // Get the dialog element
   const dialog = document.getElementById("welcomeDialog");
   if (dialog) {
-    // Standard close
     dialog.close();
-    // Remove the open attribute manually
-    dialog.removeAttribute("open");
-    // Force hide via inline style
     dialog.style.display = "none";
+    dialog.removeAttribute("open");
   }
-  
-  // Also handle if stored in els
-  if (els.welcomeDialog) {
-    els.welcomeDialog.close();
-    els.welcomeDialog.style.display = "none";
-  }
-  
-  // Show the toast
-  if (typeof toast === 'function') {
-    toast("Ready to go! Start adding your first task.");
-  }
+  // Also remove backdrop if any (handled by close)
+  toast("Ready to go! Start adding your first task.");
 }
 function setDensityButton() {
   if (!els.densityToggle) return;  // ← add this guard
@@ -740,9 +734,12 @@ async function completeAuth(session, message, options = {}) {
   toast(message);
 
   // 👇 Show onboarding for first-time users
-  if (!localStorage.getItem(ONBOARDING_SEEN_KEY)) {
-    setTimeout(() => showOnboarding(), 500);
-  }
+if (!localStorage.getItem(ONBOARDING_SEEN_KEY)) {
+  setTimeout(() => showOnboarding(), 500);
+} else {
+  // If key exists but dialog might be open (edge case), close it
+  const dialog = document.getElementById("welcomeDialog");
+  if (dialog && dialog.open) dialog.close();
 }
 
 function loadTasks(options = {}) {
