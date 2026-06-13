@@ -281,6 +281,11 @@ function bindEvents() {
       });
     });
   }
+  if (els.importFile) {
+    els.importFile.addEventListener("change", importTasks);
+  } else {
+    console.warn("importFile element not found");
+  }
 
   // Dropdown settings action
   document.querySelectorAll("[data-action='settings']").forEach(btn => {
