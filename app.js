@@ -116,6 +116,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function bindElements() {
   [
+    //account and settings start//
+    "accountDropdown",
+    "dropdownMenu",
+    "settingsDialog",
+    "settingsThemeSelect",
+    "settingsDensitySelect",
+    "settingsExportBtn",
+    "settingsImportBtn",
+    "settingsClearDataBtn",
+    "closeSettingsBtn",
+    "settingsForm",
+    //account and settings end//
     "welcomeDialog",
     "welcomeNextBtn",
     "welcomeBackBtn",
@@ -222,7 +234,62 @@ function bindElements() {
   });
 }
 
-function bindEvents() {
+function bindEvents() 
+// Settings dialog
+els.settingsForm?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const theme = els.settingsThemeSelect.value;
+  const density = els.settingsDensitySelect.value;
+  
+  // Apply theme
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem(THEME_KEY, theme);
+  setThemeIcon(theme);
+  
+  // Apply density
+  state.density = density;
+  document.documentElement.dataset.density = density;
+  localStorage.setItem(DENSITY_KEY, density);
+  setDensityButton();
+  
+  els.settingsDialog.close();
+  toast("Settings saved");
+});
+
+els.closeSettingsBtn?.addEventListener("click", () => els.settingsDialog.close());
+
+// Export from settings
+els.settingsExportBtn?.addEventListener("click", () => exportTasks());
+
+// Import from settings
+els.settingsImportBtn?.addEventListener("click", () => els.importFile.click());
+
+// Clear workspace data (local only, not cloud)
+els.settingsClearDataBtn?.addEventListener("click", () => {
+  confirmAction("Clear workspace data?", "This will remove all local tasks and meetings. Cloud sync will restore your data on next sync.", () => {
+    state.tasks = [];
+    state.meetings = [];
+    persist();
+    renderAll();
+    toast("Local workspace cleared. Sync will restore cloud data.");
+  });
+});
+
+// Dropdown settings action
+document.querySelectorAll("[data-action='settings']").forEach(btn => {
+  btn.addEventListener("click", () => {
+    // Populate current settings
+    const currentTheme = document.documentElement.dataset.theme || "light";
+    els.settingsThemeSelect.value = currentTheme;
+    els.settingsDensitySelect.value = state.density;
+    els.settingsDialog.showModal();
+  });
+});
+
+document.querySelectorAll("[data-action='signout']").forEach(btn => {
+  btn.addEventListener("click", () => handleSignOut());
+});
+//end settings dialogue//
     // Welcome dialog onboarding
   if (els.welcomeNextBtn) els.welcomeNextBtn.addEventListener("click", nextOnboardingStep);
   if (els.welcomeBackBtn) els.welcomeBackBtn.addEventListener("click", prevOnboardingStep);
