@@ -497,7 +497,7 @@ function finishOnboarding() {
   }
 }
 function setDensityButton() {
-  if (!els.densityToggle) return;
+  if (!els.densityToggle) return;  // ← add this guard
   const compact = state.density === "compact";
   els.densityToggle.innerHTML = `<i data-lucide="${compact ? "panel-top-open" : "rows-3"}"></i>${compact ? "Comfort" : "Compact"}`;
   refreshIcons();
