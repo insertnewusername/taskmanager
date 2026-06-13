@@ -767,7 +767,8 @@ body.auth-ready .auth-gate {
   align-items: flex-start;
   gap: 10px;
   flex: 1 1 auto;
-  max-width: 560px;          /* limit width */
+  max-width: 100%;           /* was 560px, now full width but limited by parent */
+  min-width: 300px;
   min-height: 50px;
   padding: 8px 12px 8px 16px;
   border: 1px solid var(--line);
