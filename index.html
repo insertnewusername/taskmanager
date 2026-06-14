@@ -501,6 +501,59 @@
   </style>
 </head>
 <body>
+<!-- STOP STEALERS LIKE BEN FROM INSPECTING -->
+  <script>
+(function() {
+    // 1. Disable right-click
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+    });
+
+    // 2. Disable common keyboard shortcuts for DevTools
+    document.addEventListener('keydown', function(e) {
+        // F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+U, Ctrl+Shift+J
+        if (e.key === 'F12' ||
+            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) ||
+            (e.ctrlKey && e.key === 'U')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // 3. DevTools detection using debugger trick
+    function detectDevTools() {
+        const start = performance.now();
+        debugger; // If DevTools open, execution pauses here
+        const end = performance.now();
+        if (end - start > 100) {
+            // DevTools was open, break the site
+            document.body.innerHTML = '<h1>Developer tools detected. Site cannot be inspected.</h1>';
+            // Optionally redirect or clear localStorage
+            // window.location.href = 'about:blank';
+            throw new Error('DevTools detected');
+        }
+    }
+
+    // Run detection periodically
+    setInterval(detectDevTools, 1000);
+    detectDevTools();
+
+    // 4. Additional detection: check for element that DevTools injects (rarely works)
+    // This is a legacy trick, not reliable, but harmless.
+    setInterval(function() {
+        const devtools = /./;
+        devtools.toString = function() {
+            document.body.innerHTML = '';
+            throw new Error('DevTools detected via toString');
+        };
+        console.log(devtools);
+    }, 500);
+})();
+</script>
+
+
+  <!--Ok end of stopping -->
 <div class="landing-page">
   <nav class="landing-nav" id="landingNav">
     <div class="nav-container">
