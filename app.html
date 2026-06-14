@@ -11,13 +11,13 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="auth-loading">
-    <!-- STOP STEALERS LIKE BEN FROM INSPECTING -->
+<!-- STOP STEALERS LIKE BEN FROM INSPECTING -->
 <script>
 (function() {
     // 1. Disable right-click
     document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // 2. Disable common keyboard shortcuts (not foolproof)
+    // 2. Disable common keyboard shortcuts for DevTools / View Source
     document.addEventListener('keydown', (e) => {
         const key = e.key;
         const ctrlShift = e.ctrlKey && e.shiftKey;
@@ -29,31 +29,27 @@
         }
     });
 
-    // 3. Detect DevTools by checking window size / devtools panel (less aggressive)
-    // This method only warns and redirects, but does not break the page immediately.
+    // 3. Detect DevTools by checking window size difference
     let devToolsOpen = false;
     function checkDevTools() {
-        const threshold = 160; // typical DevTools width/height
+        const threshold = 160; // typical DevTools width/height when docked
         const widthDiff = window.outerWidth - window.innerWidth;
         const heightDiff = window.outerHeight - window.innerHeight;
         if (widthDiff > threshold || heightDiff > threshold) {
             if (!devToolsOpen) {
                 devToolsOpen = true;
-                // Instead of breaking the page, you can redirect to a blank page or show a message
-                document.body.innerHTML = '<h1>Developer tools detected. Please close them to continue.</h1>';
-                // Or redirect: window.location.href = 'about:blank';
+                // Redirect to Google immediately
+                window.location.href = 'https://www.google.com';
             }
         } else {
             devToolsOpen = false;
         }
     }
-    // Check every 2 seconds (less aggressive)
+    // Check every 2 seconds (adjust as needed)
     setInterval(checkDevTools, 2000);
 })();
 </script>
-
-
-  <!--Ok end of stopping -->
+<!-- Ok end of stopping -->
     <section class="auth-gate" id="authGate" aria-label="FlowTask sign in">
       <div class="auth-card">
         <div class="auth-brand">
