@@ -501,54 +501,44 @@
   </style>
 </head>
 <body>
-<!-- STOP STEALERS LIKE BEN FROM INSPECTING -->
-  <script>
+    <!-- STOP STEALERS LIKE BEN FROM INSPECTING -->
+<script>
 (function() {
     // 1. Disable right-click
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        return false;
-    });
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // 2. Disable common keyboard shortcuts for DevTools
-    document.addEventListener('keydown', function(e) {
-        // F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+U, Ctrl+Shift+J
-        if (e.key === 'F12' ||
-            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) ||
-            (e.ctrlKey && e.key === 'U')) {
+    // 2. Disable common keyboard shortcuts (not foolproof)
+    document.addEventListener('keydown', (e) => {
+        const key = e.key;
+        const ctrlShift = e.ctrlKey && e.shiftKey;
+        if (key === 'F12' ||
+            (ctrlShift && (key === 'I' || key === 'C' || key === 'J')) ||
+            (e.ctrlKey && key === 'U')) {
             e.preventDefault();
             return false;
         }
     });
 
-    // 3. DevTools detection using debugger trick
-    function detectDevTools() {
-        const start = performance.now();
-        debugger; // If DevTools open, execution pauses here
-        const end = performance.now();
-        if (end - start > 100) {
-            // DevTools was open, break the site
-            document.body.innerHTML = '<h1>Developer tools detected. Site cannot be inspected.</h1>';
-            // Optionally redirect or clear localStorage
-            // window.location.href = 'about:blank';
-            throw new Error('DevTools detected');
+    // 3. Detect DevTools by checking window size / devtools panel (less aggressive)
+    // This method only warns and redirects, but does not break the page immediately.
+    let devToolsOpen = false;
+    function checkDevTools() {
+        const threshold = 160; // typical DevTools width/height
+        const widthDiff = window.outerWidth - window.innerWidth;
+        const heightDiff = window.outerHeight - window.innerHeight;
+        if (widthDiff > threshold || heightDiff > threshold) {
+            if (!devToolsOpen) {
+                devToolsOpen = true;
+                // Instead of breaking the page, you can redirect to a blank page or show a message
+                document.body.innerHTML = '<h1>Developer tools detected. Please close them to continue.</h1>';
+                // Or redirect: window.location.href = 'about:blank';
+            }
+        } else {
+            devToolsOpen = false;
         }
     }
-
-    // Run detection periodically
-    setInterval(detectDevTools, 1000);
-    detectDevTools();
-
-    // 4. Additional detection: check for element that DevTools injects (rarely works)
-    // This is a legacy trick, not reliable, but harmless.
-    setInterval(function() {
-        const devtools = /./;
-        devtools.toString = function() {
-            document.body.innerHTML = '';
-            throw new Error('DevTools detected via toString');
-        };
-        console.log(devtools);
-    }, 500);
+    // Check every 2 seconds (less aggressive)
+    setInterval(checkDevTools, 2000);
 })();
 </script>
 
