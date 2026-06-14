@@ -14,39 +14,50 @@
 <!-- STOP STEALERS LIKE BEN FROM INSPECTING -->
 <script>
 (function() {
-    // 1. Disable right-click
+    let hasRedirected = false;
+
+    function redirectToGoogle() {
+        if (!hasRedirected) {
+            hasRedirected = true;
+            window.location.href = 'https://www.google.com';
+        }
+    }
+
+    // 1. Disable right-click (and also redirect? No, just prevent)
     document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // 2. Disable common keyboard shortcuts for DevTools / View Source
+    // 2. Block & redirect on common DevTools keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         const key = e.key;
         const ctrlShift = e.ctrlKey && e.shiftKey;
-        if (key === 'F12' ||
+        const isDevToolShortcut = (
+            key === 'F12' ||
             (ctrlShift && (key === 'I' || key === 'C' || key === 'J')) ||
-            (e.ctrlKey && key === 'U')) {
+            (e.ctrlKey && key === 'U')
+        );
+        if (isDevToolShortcut) {
             e.preventDefault();
+            redirectToGoogle(); // redirect immediately on key press
             return false;
         }
     });
 
-    // 3. Detect DevTools by checking window size difference
-    let devToolsOpen = false;
+    // 3. Fast detection of docked DevTools using window size difference
     function checkDevTools() {
         const threshold = 160; // typical DevTools width/height when docked
         const widthDiff = window.outerWidth - window.innerWidth;
         const heightDiff = window.outerHeight - window.innerHeight;
         if (widthDiff > threshold || heightDiff > threshold) {
-            if (!devToolsOpen) {
-                devToolsOpen = true;
-                // Redirect to Google immediately
-                window.location.href = 'https://www.google.com';
-            }
-        } else {
-            devToolsOpen = false;
+            redirectToGoogle();
         }
     }
-    // Check every 2 seconds (adjust as needed)
-    setInterval(checkDevTools, 2000);
+
+    // Check every 300ms (very fast, but lightweight)
+    setInterval(checkDevTools, 300);
+    // Also trigger on resize (e.g., user opens DevTools via menu)
+    window.addEventListener('resize', checkDevTools);
+    // One initial check
+    checkDevTools();
 })();
 </script>
 <!-- Ok end of stopping -->
